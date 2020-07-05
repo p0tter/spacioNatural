@@ -41,7 +41,7 @@ app.post('/upload',(req,res,next)=>{
     function readFileToJson(workBookFileName){
         const workBook = xlsx.readFile(workBookFileName,{cellDates: true});
         const tabName = workBook.SheetNames;
-        //console.log(tabName);
+        console.log(tabName);
         for(let i=0; i<tabName.length; i++){
             if(tabName[i] === 'Transacciones'){
                 const workBookSheet = workBook.Sheets[tabName[i]];
@@ -96,7 +96,7 @@ app.post('/upload',(req,res,next)=>{
     
     const workBookOneExt = path.extname(workBookPathOne);
     const workBookTwoExt = path.extname(workBookPathTwo);
-    console.log(`${workBookOneExt}---${workBookTwoExt}`);
+    //console.log(`${workBookOneExt}---${workBookTwoExt}`);
     const dateTime = new Date();
     const number = Date.now();
     //console.log(dateTime1);
@@ -184,6 +184,18 @@ app.post('/upload',(req,res,next)=>{
                 });
             }*/
         });
+        
+        try{
+            //console.log(workBookPathOne);
+            //console.log(workBookPathTwo);
+            fileSystem.unlinkSync(workBookPathOne);
+            fileSystem.unlinkSync(workBookPathTwo);
+        }catch(err){
+            return res.status(400).json({
+                msg:'los archivos subidos no pudieron ser eliminados'
+            });
+        }
+        
         //console.log(dataCsvFile);
         let finalObjectData = [{}]; 
         let stringObjectData ='';
@@ -192,7 +204,7 @@ app.post('/upload',(req,res,next)=>{
         arrayDataCsvFile = arrayDataCsvFile.map((recordDataCsvFile)=>{
             dataExcelFile = dataExcelFile.map((recordDataExcelFile)=>{    
                 if((recordDataExcelFile.Monto_TransBank === recordDataCsvFile.Total)&&((recordDataCsvFile.Estado === 'Agregado a laudus')||(recordDataCsvFile.Estado ==='Pago aceptado'))){                      
-                    console.log(`${recordDataExcelFile.Monto_TransBank}----${recordDataCsvFile.Total}`);
+                   // console.log(`${recordDataExcelFile.Monto_TransBank}----${recordDataCsvFile.Total}`);
                     finalObjectData = finalObjectData.map((recordFinalObjectData)=>{                        
                         recordFinalObjectData.Referencia = recordDataCsvFile.Referencia;
                         recordFinalObjectData.Cliente = recordDataCsvFile.Cliente;
@@ -225,7 +237,7 @@ app.post('/upload',(req,res,next)=>{
                     msg: `Hubo un error al crear la carpeta ${writeFilePath}`
                 });
             }else{
-                xlsx.writeFile(newWorkBook,path.join(writeFilePath,`Consolidado ${dateTime.toISOString().slice(0,10)}_${number}.xlsx`),{cellDates:false});
+                xlsx.writeFile(newWorkBook,path.join(writeFilePath,`Consolidado ${dateTime.toISOString().slice(0,10)}_${number}.xlsx`),{cellDates:false});                
                 res.json({msg: 'Archivo creado exitosamente'});
             }
         });
